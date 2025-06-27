@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard</title>
+  <link rel="stylesheet" href="/css/monitor.css">
+  <link rel="stylesheet" href="/css/common.css">
+</head>
+<body>
+
+  
+  <header>
+    <div class="logo">
+        <a href="../css/index.html">
+            <img src="../asset/lock.png" alt="Lock icon" class="icon-img">
+        </a>
+        <p class="icon-text">Smart Lock</p>
+    </div>
+
+    <nav>
+      <div class="left-header">
+        <a href="/history" class="button">Home</a>
+        <a href="/profile" class="button">Profile</a>
+        <a href="/signout" class="button">Sign out</a>
+        <p>Hello {{user.username}}</p>
+      </div>
+    </nav>
+</header>
+<main>
+  <aside>
+      <form action="/monitor" method="get" style="width:100%">
+        <button type="submit" class="side-btn active" style="width:100%">Monitor</button>
+      </form>
+      <form action="/history" method="get" style="width:100%">
+        <button type="submit" class="side-btn" style="width:100%">History</button>
+      </form>
+      {{!-- <button class="side-btn">History</button> --}}
+      {{!-- <button class="side-btn" onclick="controlLock('Lock')">Lock</button>
+      <button class="side-btn" onclick="controlLock('Unlock')">Unlock</button> --}}
+  </aside>
+  <div class="content">
+    {{!-- <div class="card" onclick="control('Add_finger_print')">
+      <img src="/asset/fingerprint.svg" alt="Fingerprint">
+      <p id="add-fingerprint">Add Fingerprint</p>
+    </div> --}}
+    <div class="card" onclick="control('changePassword')">
+      <img src="/asset/password.svg" alt="Password">
+      <p>Change Password</p>
+    </div>
+
+    <div class="card" onclick="control('Unlock')">
+      <img src="/asset/unlock.svg" alt="Lock">
+      <p>Unlock</p>
+    </div>
+    <div class="card" onclick="control('Buzzer')">
+      <img src="/asset/alert.svg" alt="Lock">
+      <p>Buzzer</p>
+    </div>
+      
+  </div>
+</main>
+
+</body>
+<script>
+  console.log({{lockState}});
+
+  document.getElementById('toggleBuzzer').addEventListener('click', () => {
+      // Send POST request to /control with Buzzer command
+      fetch('/control', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ command: 'Buzzer' }),
+      })
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            alert(data.message);
+          } else {
+            alert('Failed to send command: ' + data.message);
+          }
+        })
+        .catch(error => {
+          console.error('Error:', error);
+        });
+    });
+  async function control(command) {
+    try {
+      console.log("hii");
+      console.log(command);
+      const response = await fetch('/control', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ command }),
+      });
+      
+    } catch (error) {
+      console.error('Error sending command:', error);
+    }
+  }
+</script>
+</html>

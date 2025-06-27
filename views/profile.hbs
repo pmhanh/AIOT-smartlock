@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Smart Lock</title>
+  <link rel="stylesheet" href="/css/profile.css">
+  <link rel="stylesheet" href="/css/common.css">
+</head>
+<body>
+    <header>
+        <div class="logo">
+            <a href="../css/index.html">
+                <img src="../asset/lock.png" alt="Lock icon" class="icon-img">
+            </a>
+            <p class="icon-text">Smart Lock</p>
+        </div>
+
+        <nav>
+          <div class="left-header">
+            <a href="/history" class="button">Home</a>
+            <a href="/profile" class="button">Profile</a>
+            <a href="/signout" class="button">Sign out</a>
+            <p>Hello {{user.username}}</p>
+          </div>
+        </nav>
+    </header>
+   <main>
+  <section class="profile-container">
+    <form action="/update-profile" method="post">
+    <div class="profile-field">
+      <label>Email</label>
+      <input type="email" value="{{user.email}}" >
+    </div>
+    <div class="profile-field">
+      <label>Name</label>
+      <input type="text" value="{{user.username}}" name="username">
+      <button class="changeinfo-btn">Change user name</button>
+    </div>
+    </form>
+    {{!-- <div class="profile-field">
+      <label>Password</label>
+      <a href="/forgot">
+      <button class="password-btn">Reset password</button>
+      </a>
+    </div> --}}
+    {{!-- <div class="profile-field">
+      <label>Fingerprint</label>
+      <div class="fingerprint-list">
+        <div class="fingerprint-item">
+          <button class="finger-btn">Finger 1</button>
+          <button class="delete-btn">&#128465;</button>
+        </div>
+        <div class="fingerprint-item">
+          <button class="finger-btn">Finger 2</button>
+          <button class="delete-btn">&#128465;</button>
+        </div>
+        <div class="fingerprint-item">
+          <button class="finger-btn">Finger 3</button>
+          <button class="delete-btn">&#128465;</button>
+        </div>
+      </div>
+    </div> --}}
+  </section>
+</main>
+
+
+    <script>
+        // Fetch the lock status periodically
+        async function fetchStatus() {
+          try {
+            const response = await fetch('/status');
+            const data = await response.json();
+            updateHistory(data.status);
+          } catch (error) {
+            console.error('Error fetching status:', error);
+          }
+        }
+    
+        // Update the table with the latest status
+        function updateHistory(status) {
+          const tableBody = document.getElementById('lock-history');
+          const newRow = document.createElement('tr');
+          newRow.innerHTML = `
+            <td>${new Date().toLocaleString()}</td>
+            <td>${status}</td>
+          `;
+          tableBody.appendChild(newRow);
+        }
+    
+        // Send lock/unlock command to the server
+        async function controlLock(command) {
+          try {
+            const response = await fetch('/control', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ command }),
+            });
+            const result = await response.json();
+            if (result.success) {
+              console.log(result.message);
+              fetchStatus(); // Update status after sending command
+            } else {
+              console.error(result.message);
+            }
+          } catch (error) {
+            console.error('Error sending command:', error);
+          }
+        }
+    
+        // Fetch the current status on page load
+        fetchStatus();
+    </script>
+</body>
+</html>

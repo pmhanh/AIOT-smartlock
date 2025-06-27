@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Smart Lock</title>
+  <link rel="stylesheet" href="/css/history.css">
+  <link rel="stylesheet" href="/css/common.css">
+</head>
+<body>
+    <header>
+        <div class="logo">
+            <a href="../css/index.html">
+                <img src="../asset/lock.png" alt="Lock icon" class="icon-img">
+            </a>
+            <p class="icon-text">Smart Lock</p>
+        </div>
+        <nav>
+          <div class="left-header">
+              <a href="/history" class="button">Home</a>
+              <a href="/profile" class="button">Profile</a>
+              <a href="/signout" class="button">Sign out</a>
+              <p>Hello {{user.username}}</p>
+          </div>
+        </nav>
+    </header>
+    <main>
+        <aside>
+            <form action="/monitor" method="get" style="width:100%">
+              <button type="submit" class="side-btn" style="width:100%">Monitor</button>
+            </form>
+            <form action="/history" method="get" style="width:100%">
+              <button type="submit" class="side-btn active" style="width:100%">History</button>
+            </form>
+            {{!-- <button class="side-btn">History</button> --}}
+        </aside>
+        <section class="history-table">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Date Time</th>
+                        <th>State</th>
+                        <th>Result</th>
+                    </tr>
+                </thead>
+                <tbody id="lock-history">
+                  {{#each history}}
+                  <tr>
+                      <td>{{this.date_time}}</td>
+                      <td>{{this.state}}</td>
+                      <td>{{this.result}}</td>
+                  </tr>
+                  {{/each}}
+                    
+                </tbody>
+            </table>
+        </section>
+    </main>
+
+    <script>
+        async function fetchStatus() {
+          try {
+            const response = await fetch('/status');
+            const data = await response.json();
+            updateHistory(data.status);
+          } catch (error) {
+            console.error('Error fetching status:', error);
+          }
+        }
+    
+        function updateHistory(status) {
+          const tableBody = document.getElementById('lock-history');
+          const newRow = document.createElement('tr');
+          newRow.innerHTML = `
+            <td>${new Date().toLocaleString('vi-VN')}</td>
+            <td>${status}</td>
+          `;
+          tableBody.appendChild(newRow);
+        }
+    
+        // Send lock/unlock command to the server
+        async function controlLock(command) {
+          try {
+            const response = await fetch('/control', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ command }),
+            });
+            const result = await response.json();
+            if (result.success) {
+              console.log(result.message);
+              fetchStatus();
+            } else {
+              console.error(result.message);
+            }
+          } catch (error) {
+            console.error('Error sending command:', error);
+          }
+        }
+    
+        fetchStatus();
+    </script>
+</body>
+</html>

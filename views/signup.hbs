@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<!-- divinectorweb.com -->
+<head>
+    <meta charset="UTF-8"> 
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Responsive Login Form Design using flexbox</title>
+    <link rel="stylesheet" href="/css/signup.css"> 
+</head>
+<body style="background-color: #264653;">
+    <header>
+        <section class="header-bar">
+            <div class="right-header">
+                <a href="/">
+                    <img src="/asset/lock1.png" alt="Lock icon" class="icon-img">
+                </a>
+                <p class="icon-text">Smart Lock</p>
+            </div> 
+        </section>
+    </header> 
+    <div class="main">
+        <div class="image-left">
+            <img src="/asset/lock2.png" alt="">
+        </div>
+        <div class="signup-part">   
+            <div class="signup-right">
+                <h2>Create an account!</h2>
+                <form action="/api/signup" method="POST" class="signup-form">
+                    <label for="username">Username</label>
+                    <input type="text" name="username" placeholder="Enter your username">
+                    <label for="email">Email</label>
+                    <input type="email" name="email" placeholder="Enter your email address">
+                    <label for="password">Password</label>
+                    <input type="password" name="password" id="" placeholder="Enter your password">
+                    <button type="submit" class="login-button"> Sign up </button>
+                </form>
+                <span>Already have an account? 
+                    <a href="/login">Log in</a>
+                </span>
+            </div>
+        </div>
+    </div>
+    
+</body>
+</html>

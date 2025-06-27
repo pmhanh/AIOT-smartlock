@@ -1,0 +1,12 @@
+@import url('./common.css');
+
+/* Chỉ giữ lại các style đặc thù cho monitor nếu có */
+
+.content {
+  flex-grow: 1;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 32px;
+  padding: 40px;
+  margin-top: 60px;
+}

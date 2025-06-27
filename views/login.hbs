@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Log in</title>
+    <link rel="stylesheet" href="/css/login.css">
+</head>
+<body style="background-color: #264653; font-family: 'poppins';">
+    <header>
+        <section class="header-bar">
+            <div class="right-header">
+                <a href="/">
+                    <img src="/asset/lock1.png" alt="Lock icon" class="icon-img">
+                </a>
+                <p class="icon-text">Smart Lock</p>
+
+            </div> 
+        </section>
+    </header> 
+    <div class="main">
+        <div class="container">
+            <div>
+                <h2>Login to your account</h2>
+                <!-- <p style="font-size: 24px; font-weight:bold;">Login to your account</p> -->
+            </div>
+            <form action="/api/login" method="post">
+                <label for="email">Email</label>
+                <input type="email" name="email" placeholder="Enter your email address">
+                <label for="password">Password</label>
+                <input type="password" name="password" id="" placeholder="Enter your password">
+                <button class="login-button">Login now</button>
+            </form>
+            <a href="/forgot">Forgot your password?</a>
+            <p>OR</p>
+            <span>Don't have an account? </span>
+            <a href="/signup">Sign up</a>
+        </div>
+        
+    </div>
+</body>
+</html>
