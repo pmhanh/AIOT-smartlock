@@ -6,6 +6,35 @@
     <title>Log in</title>
     <link rel="stylesheet" href="./css/common.css">
     <link rel="stylesheet" href="./css/camera.css">
+    <style>
+      .notification {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        padding: 15px 20px;
+        border-radius: 8px;
+        color: white;
+        font-weight: bold;
+        z-index: 1000;
+        opacity: 0;
+        transform: translateX(100%);
+        transition: all 0.3s ease;
+        max-width: 300px;
+      }
+      
+      .notification.show {
+        opacity: 1;
+        transform: translateX(0);
+      }
+      
+      .notification.success {
+        background-color: #4CAF50;
+      }
+      
+      .notification.error {
+        background-color: #f44336;
+      }
+    </style>
 </head>
 <body>
     <header>
@@ -43,15 +72,42 @@
             </div> --}}
             <div class="controls">
                 <button id="unlockBtn" class="button" type="button">Unlock</button>
-                <p id="responseMessage"></p> <!-- Thông báo phản hồi -->
             </div>
 
         </div>
         
     </div>
+
+    <!-- Notification container -->
+    <div id="notification-container"></div>
 </body>
 
 <script>
+  // Simple notification system
+  function showNotification(message, type = 'success') {
+    const container = document.getElementById('notification-container');
+    const notification = document.createElement('div');
+    notification.className = `notification ${type}`;
+    notification.textContent = message;
+    
+    container.appendChild(notification);
+    
+    // Show notification
+    setTimeout(() => {
+      notification.classList.add('show');
+    }, 100);
+    
+    // Auto hide after 3 seconds
+    setTimeout(() => {
+      notification.classList.remove('show');
+      setTimeout(() => {
+        if (notification.parentElement) {
+          notification.remove();
+        }
+      }, 300);
+    }, 3000);
+  }
+
   document.getElementById("unlockBtn").addEventListener("click", async () => {
     try {
       const response = await fetch("/control", {
@@ -63,18 +119,15 @@
       });
 
       const data = await response.json();
-      const messageElem = document.getElementById("responseMessage");
 
       if (data.success) {
-        messageElem.textContent = "✅ Mở khóa thành công!";
-        messageElem.style.color = "green";
+        showNotification('🔓 Mở cửa thành công!', 'success');
       } else {
-        messageElem.textContent = "❌ Lỗi: " + data.message;
-        messageElem.style.color = "red";
+        showNotification('❌ Lỗi: ' + (data.message || 'Không thể thực hiện lệnh'), 'error');
       }
     } catch (err) {
       console.error(err);
-      document.getElementById("responseMessage").textContent = "⚠️ Lỗi kết nối tới server!";
+      showNotification('⚠️ Lỗi kết nối tới server!', 'error');
     }
   });
 </script>

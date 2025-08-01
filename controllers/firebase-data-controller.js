@@ -170,6 +170,12 @@ const getHistoryEntry = async(req, res) =>{
     let userHistory = [];
     if (userDoc.data() && userDoc.data().entries){
       userHistory = userDoc.data().entries;
+      // Sắp xếp theo thời gian mới nhất trước
+      userHistory.sort((a, b) => {
+        const dateA = new Date(a.date_time);
+        const dateB = new Date(b.date_time);
+        return dateB - dateA; // Sắp xếp giảm dần (mới nhất trước)
+      });
     }
     return res.render('history', { history: userHistory , user: userInfo, userId : userId});
   } catch (error) {

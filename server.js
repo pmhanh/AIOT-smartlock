@@ -241,9 +241,9 @@ mqttClient.on('message', async (topic, message) => {
     if (msg === 'Doorbell') {
       const alert_data = {
         t: 'Smart Lock Alert',
-        m: 'Bạn có thông báo mới từ khóa thông minh!',
-        u: 'http://localhost:3000',
-        ut: 'Xem chi tiết'
+        m: 'Someone is at your door. Please check the camera.',
+        u: '',
+        ut: ''
       };
       pushsafer.send(alert_data, (err, result) => {
         if (err) {
@@ -257,6 +257,22 @@ mqttClient.on('message', async (topic, message) => {
 
     if (msg.startsWith('Buzzer_')) {
       buzzerState = msg.split('_')[1];
+      return;
+    }
+
+    // Handle device response messages
+    if (msg === 'Unlock_Success') {
+      console.log('Device confirmed: Unlock successful');
+      return;
+    }
+    
+    if (msg === 'Unlock_Failed') {
+      console.log('Device reported: Unlock failed');
+      return;
+    }
+    
+    if (msg === 'Password_Changed') {
+      console.log('Device confirmed: Password changed successfully');
       return;
     }
 
@@ -296,25 +312,45 @@ const transporter = nodemailer.createTransport({
 app.post('/control', (req, res) => {
     const { command } = req.body;
     if (command === 'Unlock' || command === 'Buzzer'|| command === 'changePassword') {
-      // if (command ==='Lock')
-      // {
-      //   lockState = 'Unlock';
-      // }
-      // else
-      // if (command === 'Unlock')
-      // {
-      //   lockState = 'Lock';
-      // }
-      if (command === 'Buzzer') {
-        buzzerState = buzzerState === 'Off' ? 'On' : 'Off';
-        mqttClient.publish(controlTopic, `Buzzer_${buzzerState}`);
-        console.log(buzzerState)
-      }
+      try {
+        if (command === 'Buzzer') {
+          buzzerState = buzzerState === 'Off' ? 'On' : 'Off';
+          mqttClient.publish(controlTopic, `Buzzer_${buzzerState}`);
+          console.log('Buzzer state:', buzzerState);
+          res.json({ 
+            success: true, 
+            message: `Buzzer đã được ${buzzerState === 'On' ? 'bật' : 'tắt'}` 
+          });
+          return;
+        }
 
-      mqttClient.publish(controlTopic, command);
-      res.json({ success: true, message: `Sent command: ${command}` });
+        mqttClient.publish(controlTopic, command);
+        
+        let message = '';
+        switch(command) {
+          case 'Unlock':
+            message = 'Lệnh mở cửa đã được gửi thành công!';
+            break;
+          case 'changePassword':
+            message = 'Yêu cầu đổi mật khẩu đã được gửi!';
+            break;
+          default:
+            message = `Lệnh ${command} đã được gửi thành công!`;
+        }
+        
+        res.json({ success: true, message: message });
+      } catch (error) {
+        console.error('Error sending command:', error);
+        res.status(500).json({ 
+          success: false, 
+          message: 'Lỗi khi gửi lệnh tới thiết bị' 
+        });
+      }
     } else {
-      res.status(400).json({ success: false, message: 'Invalid command' });
+      res.status(400).json({ 
+        success: false, 
+        message: 'Lệnh không hợp lệ' 
+      });
     }
   });
   

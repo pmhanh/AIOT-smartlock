@@ -6,6 +6,35 @@
   <title>Dashboard</title>
   <link rel="stylesheet" href="/css/monitor.css">
   <link rel="stylesheet" href="/css/common.css">
+  <style>
+    .notification {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      padding: 15px 20px;
+      border-radius: 8px;
+      color: white;
+      font-weight: bold;
+      z-index: 1000;
+      opacity: 0;
+      transform: translateX(100%);
+      transition: all 0.3s ease;
+      max-width: 300px;
+    }
+    
+    .notification.show {
+      opacity: 1;
+      transform: translateX(0);
+    }
+    
+    .notification.success {
+      background-color: #4CAF50;
+    }
+    
+    .notification.error {
+      background-color: #f44336;
+    }
+  </style>
 </head>
 <body>
 
@@ -64,45 +93,77 @@
   </div>
 </main>
 
+<!-- Notification container -->
+<div id="notification-container"></div>
+
 </body>
 <script>
   console.log({{lockState}});
+  
+  // Simple notification system
+  function showNotification(message, type = 'success') {
+    const container = document.getElementById('notification-container');
+    const notification = document.createElement('div');
+    notification.className = `notification ${type}`;
+    notification.textContent = message;
+    
+    container.appendChild(notification);
+    
+    // Show notification
+    setTimeout(() => {
+      notification.classList.add('show');
+    }, 100);
+    
+    // Auto hide after 3 seconds
+    setTimeout(() => {
+      notification.classList.remove('show');
+      setTimeout(() => {
+        if (notification.parentElement) {
+          notification.remove();
+        }
+      }, 300);
+    }, 3000);
+  }
+  
   function goToCamera() {
     window.location.href = '/camera';
   }
-  document.getElementById('toggleBuzzer').addEventListener('click', () => {
-      // Send POST request to /control with Buzzer command
-      fetch('/control', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ command: 'Buzzer' }),
-      })
-        .then(response => response.json())
-        .then(data => {
-          if (data.success) {
-            alert(data.message);
-          } else {
-            alert('Failed to send command: ' + data.message);
-          }
-        })
-        .catch(error => {
-          console.error('Error:', error);
-        });
-    });
+  
   async function control(command) {
     try {
-      console.log("hii");
-      console.log(command);
+      console.log("Sending command:", command);
+      
       const response = await fetch('/control', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ command }),
       });
       
+      const data = await response.json();
+      
+      if (data.success) {
+        let message = '';
+        switch(command) {
+          case 'Unlock':
+            message = '🔓 Mở cửa thành công!';
+            break;
+          case 'Buzzer':
+            message = '🔔 Buzzer đã được kích hoạt!';
+            break;
+          case 'changePassword':
+            message = '🔑 Yêu cầu đổi mật khẩu đã được gửi!';
+            break;
+          default:
+            message = data.message || `Lệnh ${command} đã được thực hiện thành công!`;
+        }
+        showNotification(message, 'success');
+      } else {
+        showNotification('❌ Lỗi: ' + (data.message || 'Không thể thực hiện lệnh'), 'error');
+      }
+      
     } catch (error) {
       console.error('Error sending command:', error);
+      showNotification('⚠️ Lỗi kết nối tới server!', 'error');
     }
   }
 </script>
