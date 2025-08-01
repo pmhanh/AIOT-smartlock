@@ -57,14 +57,19 @@
       <img src="/asset/alert.svg" alt="Lock">
       <p>Buzzer</p>
     </div>
-      
+    <div class="card" onclick="goToCamera()">
+      <img src="/asset/camera.svg" alt="Camera">
+      <p>Camera</p>
+    </div>
   </div>
 </main>
 
 </body>
 <script>
   console.log({{lockState}});
-
+  function goToCamera() {
+    window.location.href = '/camera';
+  }
   document.getElementById('toggleBuzzer').addEventListener('click', () => {
       // Send POST request to /control with Buzzer command
       fetch('/control', {

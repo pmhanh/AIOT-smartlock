@@ -7,7 +7,7 @@ const { getFirestore, doc, setDoc, getDoc, updateDoc, collection, data, addDoc, 
 const { lock } = require('../routes');
 const nodemailer = require('nodemailer')
 const transporter = nodemailer.createTransport({
-  service: 'gmail', // For example, Gmail
+  service: 'gmail',
   auth: {
     user: 'underwavecontact@gmail.com',
     pass: 'awrj ukks lynl sslx'

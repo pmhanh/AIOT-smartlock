@@ -9,10 +9,13 @@ const PushSafer = require('pushsafer-notifications');
 const PORT = process.env.PORT || 3000;
 const auth_router= require('./routes');
 const mqtt = require('mqtt')
-// const mqttClient = mqtt.connect('mqtt://localhost'); // Replace 'localhost' with your broker's address
+const { createProxyMiddleware } = require('http-proxy-middleware');
+
+
+// const mqttClient = mqtt.connect('mqtt://localhost');
 const nodemailer = require('nodemailer');
 const pushsafer = new PushSafer({
-  k: process.env.PUSHSAFER_API_KEY, // Replace with your PushSafer private key
+  k: process.env.PUSHSAFER_API_KEY, 
 });
 
 
@@ -72,6 +75,18 @@ app.get('/signup', (req, res) => {
   res.render('signup');
 });
 
+// const esp32IP = 'http://172.20.10.2:81';
+
+// // Proxy MJPEG stream
+// app.use('/stream', createProxyMiddleware({
+//   target: esp32IP,
+//   changeOrigin: true,
+//   pathRewrite: { '^/stream': '/stream' }
+// }));
+
+app.get('/camera', (req, res) => {
+  res.render('camera');
+})
 
 app.get('/reset', (req, res) => {
   res.render('resetpassword')
@@ -133,73 +148,141 @@ let buzzerState = 'Off';
 const { addHistoryEntry, getMonitor } = require('./controllers/firebase-data-controller');
 const user = getAuth().currentUser;
 //Listen to message
-mqttClient.on('message', async (topic, message) => {
-  try {
-    //const messageString = (message.toISOString());
-    //console.log('Received message:', messageString);
-    console.log(message.toString());
-    if (message.toString() === 'Alert'){
-        const alert_data = {
-          t: 'Security Alert!', // Title
-          m: 'Your lock has been failed to open too many times', // Message
-          s: '', // Optional sound
-          v: '', // Opt vibration
-          i: '', // Opt icon
-        };
-        pushsafer.send(alert_data, (err, result) => {
-          if (err) {
-            console.error('Error sending PushSafer notification:', err);
-          } else {
-            console.log('PushSafer notification sent:', result);
-          }
-        });
-    }
-    const msg = message.toString();
-    if (msg.startsWith('Buzzer_')) {
-      buzzerState = msg.split('_')[1];
-    }
-    const data = JSON.parse(message.toString());
-    console.log('Receive messsaaage: ', message)
-    console.log(`Plain text message received: ${data.state}`);
-    console.log(`Plain text message received: ${data.result}`);
+// mqttClient.on('message', async (topic, message) => {
+//   try {
+//     //const messageString = (message.toISOString());
+//     //console.log('Received message:', messageString);
+//     console.log(message.toString());
+//     if (message.toString() === 'Alert'){
+//         const alert_data = {
+//           t: 'Security Alert!', // Title
+//           m: 'Your lock has been failed to open too many times', // Message
+//           s: '', // Optional sound
+//           v: '', // Opt vibration
+//           i: '', // Opt icon
+//         };
+//         pushsafer.send(alert_data, (err, result) => {
+//           if (err) {
+//             console.error('Error sending PushSafer notification:', err);
+//           } else {
+//             console.log('PushSafer notification sent:', result);
+//           }
+//         });
+//     }
+//     const msg = message.toString();
+//     if (msg.startsWith('Buzzer_')) {
+//       buzzerState = msg.split('_')[1];
+//     }
+//     const data = JSON.parse(message.toString());
+//     console.log('Receive messsaaage: ', message)
+//     console.log(`Plain text message received: ${data.state}`);
+//     console.log(`Plain text message received: ${data.result}`);
 
-    // Check if the message is valid JSON
-    // let data;
-    // try {
-    //   data = JSON.parse(messageString);
-    // } catch (jsonError) {
-    //   console.warn('Message is not JSON, treating as plain text:', messageString);
-    //   data = { text: messageString }; // Treat non-JSON messages as plain text
-    // }
+//     // Check if the message is valid JSON
+//     // let data;
+//     // try {
+//     //   data = JSON.parse(messageString);
+//     // } catch (jsonError) {
+//     //   console.warn('Message is not JSON, treating as plain text:', messageString);
+//     //   data = { text: messageString }; // Treat non-JSON messages as plain text
+//     // }
 
-    const datetime = new Date().toLocaleString('vi-VN');
+//     const datetime = new Date().toLocaleString('vi-VN');
 
-    if (data.text) {
-      console.log(`Plain text message received: ${data.text}`);
-    } else {
-      console.log('JSON data received:', data);
-      const { state, image, result } = data;
+//     if (data.text) {
+//       console.log(`Plain text message received: ${data.text}`);
+//     } else {
+//       console.log('JSON data received:', data);
+//       const { state, image, result } = data;
 
-      data.date_time = datetime;
+//       data.date_time = datetime;
       
 
-      await addHistoryEntry(data);
-      // const changepass = {
-      //   from: 'underwavecontact@gmail.com',
-      //   to: user.email,
-      //   subject: 'Password changed successfully',
-      //   text: 'Your lock password has been successfully changed.',
-      //   };
-      // if (state == "Change password")
-      // {
-      //   await transporter.sendEmail(changepass);
-      // }
+//       await addHistoryEntry(data);
+//       // const changepass = {
+//       //   from: 'underwavecontact@gmail.com',
+//       //   to: user.email,
+//       //   subject: 'Password changed successfully',
+//       //   text: 'Your lock password has been successfully changed.',
+//       //   };
+//       // if (state == "Change password")
+//       // {
+//       //   await transporter.sendEmail(changepass);
+//       // }
 
+//     }
+//   } catch (error) {
+//     console.error('Error processing message:', error);
+//   }
+// });
+mqttClient.on('message', async (topic, message) => {
+  try {
+    const msg = message.toString();
+    console.log('Received message:', msg);
+
+    if (msg === 'Alert') {
+      const alert_data = {
+        t: 'Security Alert!',
+        m: 'Your lock has been failed to open too many times',
+        s: '',
+        v: '',
+        i: '',
+      };
+      pushsafer.send(alert_data, (err, result) => {
+        if (err) {
+          console.error('Error sending PushSafer notification:', err);
+        } else {
+          console.log('PushSafer notification sent:', result);
+        }
+      });
+      return;
     }
+
+    if (msg === 'Doorbell') {
+      const alert_data = {
+        t: 'Smart Lock Alert',
+        m: 'Bạn có thông báo mới từ khóa thông minh!',
+        u: 'http://localhost:3000',
+        ut: 'Xem chi tiết'
+      };
+      pushsafer.send(alert_data, (err, result) => {
+        if (err) {
+          console.error('Error sending PushSafer notification:', err);
+        } else {
+          console.log('PushSafer notification sent:', result);
+        }
+      });
+      return;
+    }
+
+    if (msg.startsWith('Buzzer_')) {
+      buzzerState = msg.split('_')[1];
+      return;
+    }
+
+    let data;
+    try {
+      data = JSON.parse(msg);
+    } catch (jsonErr) {
+      console.warn('Message is not valid JSON, skipping JSON parsing:', msg);
+      return; // Dừng xử lý nếu không phải JSON
+    }
+
+    console.log('JSON data received:', data);
+
+    const datetime = new Date().toLocaleString('vi-VN');
+    data.date_time = datetime;
+
+    const { state, result } = data;
+    console.log(`state: ${state}, result: ${result}`);
+
+    await addHistoryEntry(data);
+
   } catch (error) {
     console.error('Error processing message:', error);
   }
 });
+
 const transporter = nodemailer.createTransport({
   service: 'gmail',
   auth: {

@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Log in</title>
+    <link rel="stylesheet" href="./css/common.css">
+    <link rel="stylesheet" href="./css/camera.css">
+</head>
+<body>
+    <header>
+        <div class="logo">
+            <a href="../css/index.html">
+                <img src="../asset/lock.png" alt="Lock icon" class="icon-img">
+            </a>
+            <p class="icon-text">Smart Lock</p>
+        </div>
+
+        <nav>
+        <div class="left-header">
+            <a href="/history" class="button">Home</a>
+            <a href="/profile" class="button">Profile</a>
+            <a href="/signout" class="button">Sign out</a>
+            <p>Hello {{user.username}}</p>
+        </div>
+        </nav>
+    </header>
+    <div class="main">
+        <div class="container">
+
+            <h1>Camera Live Stream</h1>
+
+            <div class="camera-stream">
+                <img src="http://172.20.10.2:81/stream" width="640" height="480" />
+
+            </div>
+
+            {{!-- <div class="controls">
+                <form method="POST" action="/control">
+                <input type="hidden" name="command" value="Unlock">
+                <button class="button" type="submit">Unlock</button>
+                </form>
+            </div> --}}
+            <div class="controls">
+                <button id="unlockBtn" class="button" type="button">Unlock</button>
+                <p id="responseMessage"></p> <!-- Thông báo phản hồi -->
+            </div>
+
+        </div>
+        
+    </div>
+</body>
+
+<script>
+  document.getElementById("unlockBtn").addEventListener("click", async () => {
+    try {
+      const response = await fetch("/control", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ command: "Unlock" })
+      });
+
+      const data = await response.json();
+      const messageElem = document.getElementById("responseMessage");
+
+      if (data.success) {
+        messageElem.textContent = "✅ Mở khóa thành công!";
+        messageElem.style.color = "green";
+      } else {
+        messageElem.textContent = "❌ Lỗi: " + data.message;
+        messageElem.style.color = "red";
+      }
+    } catch (err) {
+      console.error(err);
+      document.getElementById("responseMessage").textContent = "⚠️ Lỗi kết nối tới server!";
+    }
+  });
+</script>
+
+</html>
